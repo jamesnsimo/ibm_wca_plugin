@@ -133,3 +133,8 @@ with models.DAG(
 
     export_table_to_gcs
 ```
+
+## TODO
+
+- Improve token handling: store local valid requiring less calls to token endpoint.
+- Implement more XML API methods including [`ImportList`](https://developer.ibm.com/customer-engagement/tutorials/import-to-a-database/), [`RawRecipientDataExport`](https://developer.ibm.com/customer-engagement/tutorials/export-raw-contact-events-2/).
