@@ -16,7 +16,7 @@ from xml.etree.ElementTree import fromstring
 from lxml.html import Element, tostring
 
 
-class IbmWcaHook(HttpHook):
+class IbmWcaHook(HttpHook, LoggingMixin):
     def __init__(self, ibm_wca_conn_id):
         super().__init__(http_conn_id=ibm_wca_conn_id)
         self.ibm_wca_conn_id = ibm_wca_conn_id
@@ -55,8 +55,7 @@ class IbmWcaHook(HttpHook):
         connection = Connection(
             conn_id=ftp_conn_id,
             conn_type="ftp",
-            host="transfer{}.ibmmarketingcloud.com".format(
-                self.extra.get("pod")),
+            host="transfer{}.ibmmarketingcloud.com".format(self.extra.get("pod")),
             login="oauth",
             password=self._get_token(),
         )
@@ -68,18 +67,11 @@ class IbmWcaHook(HttpHook):
         return FTPHook(ftp_conn_id)
 
     # FTP
-    def ftp_list(self, path):
-        return self._ftp_client().list_directory(path)
-
     def ftp_get(self, remote_path, local_path):
-        return self._ftp_client().retrieve_file(
-            remote_path, "/home/airflow/gcs/data/{}".format(local_path)
-        )
+        return self._ftp_client().retrieve_file(remote_path, local_path)
 
     def ftp_put(self, remote_path, local_path):
-        return self._ftp_client().store_file(
-            remote_path, "/home/airflow/gcs/data/{}".format(local_path)
-        )
+        return self._ftp_client().store_file(remote_path, local_path)
 
     # GetUserProfile
     def load_user_profile(self):
@@ -92,12 +84,32 @@ class IbmWcaHook(HttpHook):
         return self._xml_api(payload=payload)
 
     # ExportList
-    def export_list(self, list_id):
+    def export_list(self, list_id, export_type="ALL", export_format="CSV"):
         payload = {
             "ExportList": {
                 "LIST_ID": [list_id],
-                "EXPORT_TYPE": "ALL",
-                "EXPORT_FORMAT": "CSV",
+                "EXPORT_TYPE": [export_type],
+                "EXPORT_FORMAT": [export_format],
+            }
+        }
+        return self._xml_api(payload=payload)
+
+    # ExportTable
+    def export_table(
+        self,
+        table_name,
+        export_format="CSV",
+        table_visibility=1,
+        date_start=None,
+        date_end=None,
+    ):
+        payload = {
+            "ExportTable": {
+                "TABLE_NAME": [table_name],
+                "EXPORT_FORMAT": [export_format],
+                "TABLE_VISIBILITY": [table_visibility],
+                "DATE_START": [date_start],
+                "DATE_END": [date_end],
             }
         }
         return self._xml_api(payload=payload)
@@ -107,16 +119,18 @@ class IbmWcaHook(HttpHook):
         payload = {"GetJobStatus": {"JOB_ID": [job_id]}}
         return self._xml_api(payload=payload)
 
-    # Poll GetJobStatus every 5 seconds
+    # Poll GetJobStatus
     def poll_job_status(self, job_id, wait=10):
         job = self.get_job_status(job_id)
         status = job["JOB_STATUS"]
-        self.log.info("Status: {}".format(status))
-        if status != "COMPLETE":
+        self.log.info("IBM WCA Job: %s Status: %s", job_id, status)
+        if status in ["RUNNING", "WAITING"]:
             time.sleep(wait)
             return self.poll_job_status(job_id, wait)
-        else:
+        elif status == "COMPLETE":
             return job
+        else:
+            return AirflowException("IBM WCA Job: %s Status: %s", job_id, status)
 
 
 # Parse XML to JSON
