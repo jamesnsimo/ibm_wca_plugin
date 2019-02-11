@@ -3,7 +3,7 @@ import time
 from json import dumps, loads
 
 from airflow import AirflowException
-from airflow.models import Connection
+from airflow.models import Connection, Variable
 from airflow.hooks.http_hook import HttpHook
 from airflow.contrib.hooks.ftp_hook import FTPHook
 
@@ -25,16 +25,36 @@ class IbmWcaHook(HttpHook, LoggingMixin):
         self.extra = self.conn.extra_dejson
 
     # Get access_token for XML API call Authorization header and FTP password
-    def _get_token(self, data=None):
-        endpoint = "/oauth/token"
-        data = {
-            "client_id": self.extra.get("client_id"),
-            "client_secret": self.extra.get("client_secret"),
-            "refresh_token": self.conn.password,
-            "grant_type": "refresh_token",
-        }
-        auth = super().run(endpoint, data)
-        return loads(auth.text)["access_token"]
+    # from Variable if exists not expired, else get new token and save to Variable
+    def _get_token(self):
+        auth_var = Variable.get(
+            "{}_access_token".format(self.ibm_wca_conn_id),
+            default_var={},
+            deserialize_json=True,
+        )
+        if not auth_var == {} and time.time() < auth_var["refresh_at"]:
+            self.log.info("Token good. Using var token")
+            return auth_var["access_token"]
+        else:
+            self.log.info("Getting new token")
+            endpoint = "/oauth/token"
+            body = {
+                "client_id": self.extra.get("client_id"),
+                "client_secret": self.extra.get("client_secret"),
+                "refresh_token": self.conn.password,
+                "grant_type": "refresh_token",
+            }
+            auth = super().run(endpoint, data=body)
+            auth_json = loads(auth.text)
+            auth_json["refresh_at"] = round(
+                auth_json["expires_in"] - 3600 + time.time()
+            )
+            Variable.set(
+                "{}_access_token".format(self.ibm_wca_conn_id),
+                auth_json,
+                serialize_json=True,
+            )
+            return loads(auth.text)["access_token"]
 
     # Call XML API with method functions below.
     def _xml_api(self, payload, headers=None, extra_options=None):
@@ -51,7 +71,7 @@ class IbmWcaHook(HttpHook, LoggingMixin):
     # FTP Client.
     @provide_session
     def _ftp_client(self, session=None):
-        ftp_conn_id = self.conn_id.replace("ibm_wca", "ibm_wca_ftp")
+        ftp_conn_id = "{}_ftp".format(self.conn_id)
         connection = Connection(
             conn_id=ftp_conn_id,
             conn_type="ftp",
@@ -117,6 +137,11 @@ class IbmWcaHook(HttpHook, LoggingMixin):
     # GetJobStatus
     def get_job_status(self, job_id):
         payload = {"GetJobStatus": {"JOB_ID": [job_id]}}
+        return self._xml_api(payload=payload)
+
+    # PurgeData
+    def purge_data(self, target, source):
+        payload = {"PurgeData": {"TARGET_ID": [target], "SOURCE_ID": [source]}}
         return self._xml_api(payload=payload)
 
     # Poll GetJobStatus
