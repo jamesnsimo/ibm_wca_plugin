@@ -139,6 +139,11 @@ class IbmWcaHook(HttpHook, LoggingMixin):
         payload = {"GetJobStatus": {"JOB_ID": [job_id]}}
         return self._xml_api(payload=payload)
 
+    # ImportList
+    def import_list(self, map_file, source_file):
+        payload = {"ImportList": {"MAP_FILE": [map_file], "SOURCE_FILE": [source_file]}}
+        return self._xml_api(payload=payload)
+
     # PurgeData
     def purge_data(self, target, source):
         payload = {"PurgeData": {"TARGET_ID": [target], "SOURCE_ID": [source]}}
