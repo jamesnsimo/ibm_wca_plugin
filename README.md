@@ -141,13 +141,13 @@ Generates an XML 'map file' from param.params, BigQuery source table headers and
 Accepts the following parameters:
 
     :param ibm_wca_conn_id:   IBM WCA Connection Id (HTTP Connection)
-    :param table_name:        IBM WCA Table to export
-    :param date_start:        Specifies the beginning boundary of information to export
-                              (relative to the last modified date of the row).
-                              If time is included, it must be in 24-hour format. i.e. "12/25/2019 00:00:00" (templated)
-    :param date_end:          Specifies the ending boundary of information to export
-                              (relative to the last modified date of the row).
-                              If time is included, it must be in 24-hour format.. i.e. "12/25/2019 00:00:00" (templated)
+    :param params:            Dictionary of ImportList map file parameters
+                              which may include the following:
+                                - action
+                                - audience
+                                - list_id
+                                - list_type
+                                - sync_field
     :param gcs_conn_id:       GCS Connection Id
     :param gcs_bucket:        GCS bucket name (templated)
     :param gcs_key:           GCS destination filename (templated)
