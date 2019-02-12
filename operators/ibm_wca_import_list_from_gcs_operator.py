@@ -55,7 +55,6 @@ class IbmWcaImportListFromGCSOperator(BaseOperator):
         return names
 
     def get_ibm_fields(self, list_id):
-        self.log.info("list_id {}".format(list_id))
         meta = self.ibm_hook.get_list_meta_data(list_id)
         cols = meta["COLUMNS"]["COLUMN"]
         headers = []
@@ -93,6 +92,14 @@ class IbmWcaImportListFromGCSOperator(BaseOperator):
 
     def execute(self, context):
         config = context["params"]
+        if "purge_data" in config:
+            self.purge_job = self.ibm_hook.purge_data(
+                config["purge_data"]["target"], config["purge_data"]["source"]
+            )
+            purge_status = self.ibm_hook.poll_job_status(
+                job_id=self.purge_job["JOB_ID"]
+            )
+            self.log.info("Purge Data Job: {}".format(purge_status))
         upload_filename = context["task_instance_key_str"]
         src_fields = self.get_src_fields()
         dest_fields = self.get_ibm_fields(config["list_id"])

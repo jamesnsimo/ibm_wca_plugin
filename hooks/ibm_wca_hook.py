@@ -150,7 +150,7 @@ class IbmWcaHook(HttpHook, LoggingMixin):
         return self._xml_api(payload=payload)
 
     # Poll GetJobStatus
-    def poll_job_status(self, job_id, wait=10):
+    def poll_job_status(self, job_id, wait=5):
         job = self.get_job_status(job_id)
         status = job["JOB_STATUS"]
         self.log.info("IBM WCA Job: %s Status: %s", job_id, status)

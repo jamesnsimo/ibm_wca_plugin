@@ -143,11 +143,22 @@ Accepts the following parameters:
     :param ibm_wca_conn_id:   IBM WCA Connection Id (HTTP Connection)
     :param params:            Dictionary of ImportList map file parameters
                               which may include the following:
-                                - action
+                                - action                    Allowed values: ADD_AND_UPDATE, UPDATE_ONLY, OPT_OUT
+                                  :type action:             string
                                 - audience
+                                  :type audience:           string
                                 - list_id
-                                - list_type
+                                  :type list_id:            integer
+                                - list_type                 Allowed values: ADD_AND_UPDATE, UPDATE_ONLY, OPT_OUT
+                                  :type list_type:          integer
                                 - sync_field
+                                  :type sync_field:         string
+                                - contact_list_id
+                                  :type contact_list_id:    integer
+                                - purge_data                Dict which must include source and target
+                                                            like {"source": 8754993, "target": 484858}
+                                  :type purge_data:         dict
+
     :param gcs_conn_id:       GCS Connection Id
     :param gcs_bucket:        GCS bucket name (templated)
     :param gcs_key:           GCS destination filename (templated)
