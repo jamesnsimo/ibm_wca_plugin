@@ -227,8 +227,8 @@ with models.DAG(
         retries=1,
         ibm_wca_conn_id="ibm_wca_{}".format(ORG),
         params=PARAMS,
-        dataset_id=DATASET_NAME,
-        table_id="import_list",
+        dataset_id=DATASET_ID,
+        table_id=TABLE_ID,
         gcs_bucket=GCS_BUCKET,
         gcs_key="{}/{}".format(ORG, OUTPUT_FILENAME),
     )
