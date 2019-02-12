@@ -154,6 +154,13 @@ Accepts the following parameters:
 
 #### Example DAG
 
+Expects the following Variables:
+
+- `gcs_bucket`
+- `gcp_project`
+- `dataset_dev`
+- `email`
+
 ```python
 import datetime
 
@@ -170,7 +177,6 @@ yesterday = datetime.datetime.combine(
 )
 
 ORG = "fdr_sb"
-LIST_ID = 7797507
 PARAMS = {
     "list_id": 7797507,
     "audience": "fdr_leads",
@@ -179,7 +185,7 @@ PARAMS = {
     "sync_field": "EMAIL",
 }
 GCS_BUCKET = models.Variable.get("gcs_bucket")
-DATASET_ID = "ibm_airflow"
+DATASET_ID = models.Variable.get("dataset_dev")
 TABLE_ID = "import_list_{}".format(PARAMS["audience"])
 IMPORT_LIST_TABLE_ID = "{}.{}".format(DATASET_ID,TABLE_ID)
 OUTPUT_FILENAME = "import_list_{{ ts_nodash }}.csv"
