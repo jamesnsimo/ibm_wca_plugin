@@ -189,7 +189,7 @@ DATASET_ID = models.Variable.get("dataset_dev")
 TABLE_ID = "import_list_{}".format(PARAMS["audience"])
 IMPORT_LIST_TABLE_ID = "{}.{}".format(DATASET_ID,TABLE_ID)
 OUTPUT_FILENAME = "import_list_{{ ts_nodash }}.csv"
-GCS_FILENAME = "gs://{}/{}/{}".format(GCS_BUCKET, ORG, OUTPUT_FILENAME)
+GCS_FILENAME = "gs://{}/{}".format(GCS_BUCKET, OUTPUT_FILENAME)
 
 
 default_dag_args = {
@@ -230,7 +230,7 @@ with models.DAG(
         dataset_id=DATASET_ID,
         table_id=TABLE_ID,
         gcs_bucket=GCS_BUCKET,
-        gcs_key="{}/{}".format(ORG, OUTPUT_FILENAME),
+        gcs_key=OUTPUT_FILENAME
     )
 
     delete_gcp_resources = bash_operator.BashOperator(
