@@ -1,6 +1,6 @@
 # Airflow Plugin - IBM Watson Campaign Automation
 
-This plugin moves data from the [IBM Watson Campaign Automation XML API](https://developer.ibm.com/customer-engagement/docs/watson-marketing/ibm-engage-2/watson-campaign-automation-platform/xml-api/api-xml-overview/) to Google Cloud Storage based on the specified List or Table ID.
+This plugin moves data to and from [IBM Watson Campaign Automation](https://www.ibm.com/us-en/marketplace/digital-marketing-and-lead-management) via [XML API](https://developer.ibm.com/customer-engagement/docs/watson-marketing/ibm-engage-2/watson-campaign-automation-platform/xml-api/api-xml-overview/).
 
 ## Dependencies
 
