@@ -54,7 +54,7 @@ class IbmWcaHook(HttpHook, LoggingMixin):
                 auth_json,
                 serialize_json=True,
             )
-            return loads(auth.text)["access_token"]
+            return auth_json["access_token"]
 
     # Call XML API with method functions below.
     def _xml_api(self, payload, headers=None, extra_options=None):
