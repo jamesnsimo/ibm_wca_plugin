@@ -90,6 +90,24 @@ class IbmWcaHook(HttpHook, LoggingMixin):
     def ftp_get(self, remote_path, local_path):
         return self._ftp_client().retrieve_file(remote_path, local_path)
 
+    def ftp_get_with_progress(self, remote_path, local_path):
+        def print_progress(percent_progress):
+            self.log.info("Percent Downloaded: %s%%" % percent_progress)
+
+        self.total_downloaded = 0
+        total_file_size = self._ftp_client().get_size(remote_path)
+        output_handle = open(local_path, "wb")
+
+        def write_to_file_with_progress(data):
+            self.total_downloaded += len(data)
+            output_handle.write(data)
+            percent_progress = (self.total_downloaded / total_file_size) * 100
+            print_progress(percent_progress)
+
+        return self._ftp_client().retrieve_file(
+            remote_path, None, callback=write_to_file_with_progress
+        )
+
     def ftp_put(self, remote_path, local_path):
         return self._ftp_client().store_file(remote_path, local_path)
 
