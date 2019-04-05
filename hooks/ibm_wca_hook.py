@@ -54,7 +54,7 @@ class IbmWcaHook(HttpHook, LoggingMixin):
                 auth_json,
                 serialize_json=True,
             )
-            return loads(auth.text)["access_token"]
+            return auth_json["access_token"]
 
     # Call XML API with method functions below.
     def _xml_api(self, payload, headers=None, extra_options=None):
@@ -168,7 +168,7 @@ class IbmWcaHook(HttpHook, LoggingMixin):
         return self._xml_api(payload=payload)
 
     # Poll GetJobStatus
-    def poll_job_status(self, job_id, wait=10):
+    def poll_job_status(self, job_id, wait=5):
         job = self.get_job_status(job_id)
         status = job["JOB_STATUS"]
         self.log.info("IBM WCA Job: %s Status: %s", job_id, status)
